@@ -3,7 +3,7 @@ import sys
 
 from PySide6 import QtGui
 from PySide6.QtCore import QUrl
-from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
+from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput, QAudio
 from PySide6.QtMultimediaWidgets import QVideoWidget
 from PySide6.QtWidgets import QApplication, QFileDialog, QMainWindow
 
@@ -46,9 +46,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.backButton.pressed.connect(self.back_button_handler)
         self.forwardButton.pressed.connect(self.forward_button_handler)
 
-        self.current_volume = 100
-        self.audio_widget.setVolume(self.current_volume)
         self.player_last_state = None
+        self.is_volume_on = True
+        self.apply_volume(100)
+        self.volumeSlider.setValue(100)
 
         self.show()
 
@@ -91,13 +92,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.player.play()
 
     def volume_button_handler(self):
-        pass  # todo
-
-    def volume_slider_handler(self, value):  # todo
-        if self.volumeSlider.hasTracking():
-            print(11)
+        current_volume_value = self.volumeSlider.value()
+        if self.is_volume_on:
+            self.volumeButton.setIcon(QtGui.QIcon("resources/volume_off.png"))
+            self.apply_volume(0)
+            self.is_volume_on = False
         else:
-            print(0)
+            self.volumeButton.setIcon(QtGui.QIcon("resources/volume_on.png"))
+            self.apply_volume(current_volume_value)
+            self.is_volume_on = True
+
+    def volume_slider_handler(self, value):
+        self.volumeButton.setIcon(QtGui.QIcon("resources/volume_on.png"))
+        self.apply_volume(value)
+        self.is_volume_on = True
 
     def player_slider_moved_handler(self, value):
         self.player.setPosition(value)
@@ -115,6 +123,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def forward_button_handler(self):
         self.player.setPosition(min(self.player.duration() - 1, self.player.position() + 5000))
+
+    def apply_volume(self, volume):
+        linear_volume = QAudio.convertVolume(volume / 100.0, QAudio.LogarithmicVolumeScale, QAudio.LinearVolumeScale)
+        self.audio_widget.setVolume(linear_volume)
 
 
 if __name__ == '__main__':
