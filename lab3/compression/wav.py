@@ -1,10 +1,10 @@
 import numpy as np
 
 
-_eps: float
+__eps: float
 
 
-def _h1(size: int) -> np.ndarray:
+def __h1(size: int) -> np.ndarray:
     h = np.zeros((size, size))
     for i in range(0, size, 2):
         h[i, i // 2] = 0.5
@@ -15,22 +15,22 @@ def _h1(size: int) -> np.ndarray:
     return h
 
 
-def _h2(size: int) -> np.ndarray:
+def __h2(size: int) -> np.ndarray:
     h = np.zeros((size, size))
-    h[:size // 2, :size // 2] = _h1(size // 2)
+    h[:size // 2, :size // 2] = __h1(size // 2)
     h[size // 2:, size // 2:] = np.eye(size // 2)
     return h
 
 
-def _h3(size: int) -> np.ndarray:
+def __h3(size: int) -> np.ndarray:
     h = np.eye(size)
     h[0, 0] = h[0, 1] = h[1, 0] = 0.5
     h[1, 1] = -0.5
     return h
 
 
-def _h(size: int) -> np.ndarray:
-    h1, h2, h3 = _h1(size), _h2(size), _h3(size)
+def __h(size: int) -> np.ndarray:
+    h1, h2, h3 = __h1(size), __h2(size), __h3(size)
     return np.matmul(np.matmul(h1, h2), h3)
 
 
@@ -41,11 +41,11 @@ def compress(image: np.ndarray, compression_ratio: float = 1.5) -> np.ndarray:
     if not ((size & (size-1) == 0) and size != 0):
         raise ValueError("The size of the input image must be a power of two.")
 
-    h = _h(size)
+    h = __h(size)
     h_t = np.transpose(h)
     b = np.matmul(np.matmul(h_t, image), h)
 
-    non_zero = round(np.sum(np.abs(b) > _eps) / compression_ratio)
+    non_zero = round(np.sum(np.abs(b) > __eps) / compression_ratio)
     to_zero = b.size - non_zero
 
     b_flat = b.flatten()
@@ -57,16 +57,16 @@ def compress(image: np.ndarray, compression_ratio: float = 1.5) -> np.ndarray:
 
 def decompress(encoded_image: np.ndarray) -> np.ndarray:
     size = encoded_image.shape[0]
-    h = _h(size)
+    h = __h(size)
     h_t = np.transpose(h)
     decompressed = np.matmul(np.matmul(np.linalg.inv(h_t), encoded_image), np.linalg.inv(h))
     decompressed = np.clip(np.round(decompressed), 0, 255)
     return decompressed.astype(np.uint8)
 
 
-def setup():
-    global _eps
-    _eps = 1e-10
+def __setup():
+    global __eps
+    __eps = 1e-10
 
 
-setup()
+__setup()

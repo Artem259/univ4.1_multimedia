@@ -4,12 +4,9 @@ import shutil
 import cv2
 import numpy as np
 
-import dct
-import wav
-import psnr
+from compression import dct, psnr, wav
 
-
-input_path = "data/lena512.png"
+input_path = "data/parrot256.png"
 output_path = "data/out/"
 dct_quality = 50
 wav_compression_ratio = 1
@@ -31,7 +28,7 @@ def main():
 
     input_image = cv2.imread(input_path, 0)
     input_file = os.path.splitext(os.path.basename(input_path))[0]
-    in_txt_file = output_path + input_file + '_int.txt'
+    in_txt_file = output_path + input_file + '_in.txt'
     out_txt_file = output_path + input_file + '_out.txt'
     decompressed_image: np.ndarray
     if args.dct:
